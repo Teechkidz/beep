@@ -13,14 +13,9 @@
       background: #1a0a3e;
       min-height: 100vh;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       position: relative;
     }
 
-    /* ── Animated wavy background ── */
     #bg-canvas {
       position: fixed;
       inset: 0;
@@ -30,571 +25,970 @@
       pointer-events: none;
     }
 
-    /* ── Main layout ── */
-    #app {
+    /* ── Flash overlay on BEEP ── */
+    #flash {
+      position: fixed;
+      inset: 0;
+      background: rgba(255,80,80,0.22);
+      z-index: 50;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.05s;
+    }
+    #flash.on { opacity: 1; }
+
+    /* ════════════════════════════
+       SETUP SCREEN
+    ════════════════════════════ */
+    #setup-screen {
       position: relative;
-      z-index: 1;
+      z-index: 10;
+      min-height: 100vh;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 28px;
-      width: 100%;
-      max-width: 900px;
-      padding: 24px 20px 20px;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 40px;
+      overflow-y: auto;
     }
 
-    /* ── Teacher setup panel ── */
-    #setup-panel {
-      background: rgba(255,255,255,0.08);
-      border: 2px solid rgba(255,255,255,0.15);
-      border-radius: 18px;
-      padding: 18px 24px;
+    #setup-card {
+      background: rgba(255,255,255,0.06);
+      border: 2px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
       width: 100%;
+      max-width: 700px;
+      padding: 32px 28px 28px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
-      backdrop-filter: blur(8px);
+      gap: 20px;
     }
 
-    #setup-panel h2 {
+    .setup-header { text-align: center; }
+
+    .setup-header h1 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 3.2rem;
+      font-weight: 900;
       color: #fff;
+      letter-spacing: 0.08em;
+      text-shadow: 0 0 30px rgba(220,60,60,0.7);
+    }
+
+    .setup-header p {
+      color: rgba(255,255,255,0.55);
       font-size: 1rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      opacity: 0.7;
+      margin-top: 4px;
     }
 
-    .setup-row {
+    /* Sequence rows */
+    #seq-list {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+      flex-direction: column;
       gap: 10px;
+      max-height: 52vh;
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
-    .setup-row label {
-      color: #fff;
-      font-size: 0.95rem;
-      white-space: nowrap;
-      min-width: 90px;
+    #seq-list::-webkit-scrollbar { width: 6px; }
+    #seq-list::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
+    #seq-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+    .seq-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 10px 12px;
+      animation: rowIn 0.18s ease;
     }
 
-    input[type="text"], input[type="number"] {
-      background: rgba(255,255,255,0.12);
-      border: 2px solid rgba(255,255,255,0.25);
-      border-radius: 10px;
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .seq-num {
+      color: rgba(255,255,255,0.35);
+      font-size: 0.85rem;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: right;
+    }
+
+    .seq-input {
+      flex: 1;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
       color: #fff;
       font-family: 'Nunito', sans-serif;
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
-      padding: 8px 14px;
+      padding: 7px 12px;
       outline: none;
       transition: border-color 0.2s;
+      min-width: 0;
+    }
+    .seq-input:focus { border-color: rgba(255,255,255,0.55); }
+    .seq-input::placeholder { opacity: 0.35; font-weight: 700; }
+
+    .arrow-label {
+      color: rgba(255,255,255,0.3);
+      font-size: 1.1rem;
+      font-weight: 900;
+      flex-shrink: 0;
     }
 
-    input[type="text"] { flex: 1; min-width: 180px; }
-    input[type="number"] { width: 90px; }
+    .ans-input {
+      width: 80px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 7px 10px;
+      outline: none;
+      transition: border-color 0.2s;
+      text-align: center;
+    }
+    .ans-input:focus { border-color: rgba(255,255,255,0.55); }
+    .ans-input::placeholder { opacity: 0.35; }
 
-    input:focus { border-color: rgba(255,255,255,0.6); }
-    input::placeholder { opacity: 0.45; }
-
-    .hint {
+    .ans-hint {
       font-size: 0.78rem;
-      color: rgba(255,255,255,0.45);
-      margin-top: -6px;
+      color: rgba(120,255,160,0.7);
+      font-weight: 700;
+      min-width: 36px;
+      text-align: left;
     }
 
-    .btn-set {
-      background: linear-gradient(135deg, #5b3fc8, #8a3dd6);
+    .del-btn {
+      background: rgba(255,80,80,0.15);
+      border: 1px solid rgba(255,80,80,0.3);
+      border-radius: 7px;
+      color: rgba(255,120,120,0.8);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      padding: 5px 9px;
+      transition: background 0.15s, color 0.15s;
+      flex-shrink: 0;
+    }
+    .del-btn:hover { background: rgba(255,80,80,0.3); color: #fff; }
+
+    /* Setup buttons */
+    .setup-btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #add-btn {
+      background: rgba(255,255,255,0.1);
+      border: 2px dashed rgba(255,255,255,0.25);
+      border-radius: 12px;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      transition: background 0.15s, border-color 0.15s;
+      flex: 1;
+    }
+    #add-btn:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.45); color: #fff; }
+
+    #start-btn {
+      background: linear-gradient(135deg, #e02020, #900000);
       border: none;
       border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(200,0,0,0.45);
       color: #fff;
       cursor: pointer;
       font-family: 'Nunito', sans-serif;
-      font-size: 1rem;
+      font-size: 1.1rem;
       font-weight: 900;
-      letter-spacing: 0.04em;
-      padding: 10px 24px;
-      transition: transform 0.12s, filter 0.12s;
+      letter-spacing: 0.05em;
+      padding: 12px 32px;
+      transition: filter 0.12s, transform 0.1s;
+      flex: 2;
+    }
+    #start-btn:hover:not(:disabled) { filter: brightness(1.15); transform: translateY(-1px); }
+    #start-btn:active:not(:disabled) { transform: translateY(1px); }
+    #start-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .setup-note {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
     }
 
-    .btn-set:hover { filter: brightness(1.15); transform: translateY(-1px); }
-    .btn-set:active { transform: translateY(1px); }
+    /* ════════════════════════════
+       GAME SCREEN
+    ════════════════════════════ */
+    #game-screen {
+      position: relative;
+      z-index: 10;
+      min-height: 100vh;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      padding: 20px;
+    }
 
-    /* ── Toggle panel button ── */
-    #toggle-setup {
+    /* Top bar */
+    #game-topbar {
       position: fixed;
-      top: 14px;
-      right: 18px;
-      background: rgba(255,255,255,0.12);
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 10px;
-      color: rgba(255,255,255,0.8);
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      z-index: 20;
+    }
+
+    #edit-btn {
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.18);
+      border-radius: 9px;
+      color: rgba(255,255,255,0.7);
       cursor: pointer;
       font-family: 'Nunito', sans-serif;
       font-size: 0.82rem;
       font-weight: 700;
       padding: 6px 14px;
-      z-index: 10;
-      letter-spacing: 0.04em;
+      transition: background 0.15s;
+    }
+    #edit-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+    #progress-label {
+      color: rgba(255,255,255,0.6);
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+    }
+
+    #progress-dots {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
       transition: background 0.2s;
     }
-    #toggle-setup:hover { background: rgba(255,255,255,0.2); }
+    .dot.done  { background: rgba(120,255,160,0.7); }
+    .dot.curr  { background: #fff; transform: scale(1.3); }
 
-    /* ── BEEP button ── */
+    /* BEEP button */
     #beep-btn {
-      background: linear-gradient(160deg, #e02020 0%, #b00000 100%);
+      background: linear-gradient(160deg, #e82020 0%, #a00000 100%);
       border: none;
-      border-radius: 22px;
-      box-shadow: 0 8px 32px rgba(200, 0, 0, 0.5), 0 2px 8px rgba(0,0,0,0.4);
+      border-radius: 24px;
+      box-shadow: 0 8px 36px rgba(220,0,0,0.55), 0 2px 8px rgba(0,0,0,0.4);
       color: #fff;
       cursor: pointer;
       font-family: 'Nunito', sans-serif;
-      font-size: 3.8rem;
+      font-size: 4rem;
       font-weight: 900;
-      letter-spacing: 0.08em;
-      padding: 28px 80px;
+      letter-spacing: 0.09em;
+      padding: 28px 88px;
       transition: transform 0.08s, box-shadow 0.08s, filter 0.08s;
       user-select: none;
       min-width: 340px;
       text-align: center;
     }
-
     #beep-btn:hover {
-      filter: brightness(1.12);
+      filter: brightness(1.1);
       transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(200, 0, 0, 0.6), 0 4px 12px rgba(0,0,0,0.4);
+      box-shadow: 0 14px 44px rgba(220,0,0,0.65), 0 4px 12px rgba(0,0,0,0.4);
     }
+    #beep-btn:active { transform: scale(0.95) translateY(2px); filter: brightness(0.92); }
 
-    #beep-btn:active, #beep-btn.pressed {
-      transform: scale(0.96) translateY(2px);
-      box-shadow: 0 4px 16px rgba(200, 0, 0, 0.4);
-      filter: brightness(0.95);
+    #beep-btn.blast {
+      animation: blast 0.4s ease;
     }
-
-    #beep-btn.shake {
-      animation: shake 0.35s ease;
-    }
-
-    @keyframes shake {
-      0%   { transform: scale(0.97) translateY(2px); }
-      20%  { transform: scale(1.04) rotate(-1.5deg); }
-      40%  { transform: scale(1.04) rotate(1.5deg); }
-      60%  { transform: scale(1.02) rotate(-0.8deg); }
-      80%  { transform: scale(1.02) rotate(0.8deg); }
+    @keyframes blast {
+      0%   { transform: scale(0.94) translateY(3px); }
+      15%  { transform: scale(1.07) rotate(-2deg); }
+      30%  { transform: scale(1.07) rotate(2deg); }
+      50%  { transform: scale(1.03) rotate(-1deg); }
+      70%  { transform: scale(1.03) rotate(1deg); }
       100% { transform: scale(1) rotate(0); }
     }
 
-    /* ── Number display ── */
+    /* Number display */
     #number-display {
       background: #fff;
-      border-radius: 18px;
+      border-radius: 20px;
       width: 100%;
-      min-height: 140px;
-      padding: 24px 36px;
+      max-width: 820px;
+      min-height: 150px;
+      padding: 28px 40px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
-      gap: 10px 20px;
-      box-shadow: 0 6px 30px rgba(0,0,0,0.3);
+      gap: 6px 16px;
+      box-shadow: 0 8px 34px rgba(0,0,0,0.35);
     }
 
     .num-item {
       font-family: 'Caveat', cursive;
-      font-size: 5rem;
+      font-size: 5.2rem;
       color: #d42020;
       line-height: 1;
-      transition: opacity 0.2s;
     }
 
-    .num-separator {
+    .num-sep {
       font-family: 'Caveat', cursive;
-      font-size: 4rem;
+      font-size: 4.2rem;
       color: #d42020;
-      opacity: 0.6;
+      opacity: 0.55;
       line-height: 1;
-      align-self: center;
+      align-self: flex-end;
+      padding-bottom: 4px;
     }
 
     .num-blank {
       font-family: 'Caveat', cursive;
-      font-size: 5rem;
+      font-size: 5.2rem;
       color: #d42020;
       line-height: 1;
-      min-width: 80px;
-      border-bottom: 5px solid #d42020;
+      min-width: 90px;
+      border-bottom: 6px solid #d42020;
       text-align: center;
-      position: relative;
     }
 
-    .num-blank.hidden-answer { color: transparent; }
-
-    .num-blank .answer-text {
-      transition: opacity 0.4s;
-    }
-
-    #placeholder-text {
+    #display-placeholder {
       font-family: 'Nunito', sans-serif;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       font-weight: 700;
-      color: #aaa;
-      text-align: center;
+      color: #bbb;
     }
 
-    /* ── Action buttons row ── */
+    /* Action row */
     #action-row {
       display: flex;
-      gap: 14px;
+      gap: 12px;
+      align-items: center;
       flex-wrap: wrap;
       justify-content: center;
+      width: 100%;
+      max-width: 820px;
     }
 
-    .btn-action {
-      border: none;
+    .nav-btn {
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.22);
       border-radius: 12px;
+      color: rgba(255,255,255,0.8);
       cursor: pointer;
       font-family: 'Nunito', sans-serif;
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 900;
-      letter-spacing: 0.04em;
-      padding: 12px 28px;
-      transition: transform 0.1s, filter 0.1s, opacity 0.2s;
+      padding: 11px 22px;
+      transition: background 0.15s, transform 0.1s;
     }
-
-    .btn-action:disabled {
-      opacity: 0.35;
-      cursor: not-allowed;
-      transform: none !important;
-    }
-
-    .btn-action:not(:disabled):hover { filter: brightness(1.15); transform: translateY(-1px); }
-    .btn-action:not(:disabled):active { transform: translateY(1px); }
+    .nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.22); color: #fff; transform: translateY(-1px); }
+    .nav-btn:active:not(:disabled) { transform: translateY(1px); }
+    .nav-btn:disabled { opacity: 0.28; cursor: not-allowed; }
 
     #reveal-btn {
-      background: linear-gradient(135deg, #27ae60, #1a7d46);
+      flex: 1;
+      background: linear-gradient(135deg, #27ae60, #1a7a45);
+      border: none;
+      border-radius: 12px;
       color: #fff;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 900;
+      padding: 12px 28px;
       box-shadow: 0 4px 16px rgba(0,150,80,0.4);
+      transition: filter 0.12s, transform 0.1s, opacity 0.2s;
+      max-width: 260px;
     }
+    #reveal-btn:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
+    #reveal-btn:active:not(:disabled) { transform: translateY(1px); }
+    #reveal-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
-    #reset-btn {
-      background: rgba(255,255,255,0.15);
-      border: 2px solid rgba(255,255,255,0.25);
+    #next-btn.highlight {
+      background: linear-gradient(135deg, #f39c12, #d67c00);
+      border-color: transparent;
       color: #fff;
+      box-shadow: 0 4px 20px rgba(240,150,0,0.5);
+      animation: pulse 0.9s ease-in-out infinite alternate;
+    }
+    @keyframes pulse {
+      from { box-shadow: 0 4px 20px rgba(240,150,0,0.4); }
+      to   { box-shadow: 0 6px 28px rgba(240,150,0,0.75); transform: translateY(-2px); }
     }
 
-    /* ── Status bar ── */
+    /* Status text */
     #status {
-      color: rgba(255,255,255,0.55);
-      font-size: 0.88rem;
+      color: rgba(255,255,255,0.5);
+      font-size: 0.9rem;
       font-weight: 700;
       letter-spacing: 0.05em;
       text-align: center;
     }
 
-    /* ── Reveal flash ── */
+    /* Reveal pop-in */
     @keyframes popIn {
-      0%   { transform: scale(0.5); opacity: 0; }
-      60%  { transform: scale(1.15); }
-      100% { transform: scale(1); opacity: 1; }
+      0%   { transform: scale(0.3); opacity: 0; }
+      60%  { transform: scale(1.2); }
+      100% { transform: scale(1);   opacity: 1; }
     }
+    .pop { animation: popIn 0.32s cubic-bezier(.34,1.56,.64,1) forwards; }
 
-    .pop-in { animation: popIn 0.35s ease forwards; }
+    /* Done screen */
+    #done-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      text-align: center;
+    }
+    #done-screen h2 {
+      font-size: 2.6rem;
+      font-weight: 900;
+      color: #fff;
+      text-shadow: 0 0 28px rgba(80,200,120,0.6);
+    }
+    #done-screen p { color: rgba(255,255,255,0.6); font-size: 1rem; font-weight: 700; }
+    #restart-btn {
+      background: linear-gradient(135deg, #e02020, #900000);
+      border: none;
+      border-radius: 14px;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 900;
+      padding: 14px 40px;
+      box-shadow: 0 4px 20px rgba(200,0,0,0.4);
+      transition: filter 0.12s, transform 0.1s;
+    }
+    #restart-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
 
-    /* ── Responsive ── */
-    @media (max-width: 600px) {
+    /* Responsive */
+    @media (max-width: 580px) {
       #beep-btn { font-size: 2.8rem; padding: 22px 50px; min-width: 240px; }
       .num-item, .num-blank { font-size: 3.8rem; }
-      .num-separator { font-size: 3rem; }
+      .num-sep { font-size: 3rem; }
+      #setup-card { padding: 22px 14px; }
     }
   </style>
 </head>
 <body>
 
 <canvas id="bg-canvas"></canvas>
+<div id="flash"></div>
 
-<button id="toggle-setup">Teacher Controls</button>
-
-<div id="app">
-
-  <!-- Teacher Setup Panel -->
-  <div id="setup-panel">
-    <h2>Set Up Sequence</h2>
-
-    <div class="setup-row">
-      <label for="seq-input">Sequence:</label>
-      <input type="text" id="seq-input" placeholder="e.g.  2, 4, 6  or  30, 25, 20" />
-    </div>
-    <p class="hint">Enter the numbers students will see, separated by commas or spaces.</p>
-
-    <div class="setup-row">
-      <label for="answer-input">Answer (BEEP):</label>
-      <input type="number" id="answer-input" placeholder="auto" />
-      <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">(leave blank to auto-detect)</span>
+<!-- ══════════ SETUP SCREEN ══════════ -->
+<div id="setup-screen">
+  <div id="setup-card">
+    <div class="setup-header">
+      <h1>BEEP!</h1>
+      <p>Enter your sequences — then start the game</p>
     </div>
 
-    <div class="setup-row" style="justify-content:flex-end;">
-      <button class="btn-set" id="set-btn">Show Sequence ▶</button>
+    <div id="seq-list"></div>
+
+    <div class="setup-btn-row">
+      <button id="add-btn">+ Add Sequence</button>
+      <button id="start-btn" disabled>Start Game ▶</button>
     </div>
+
+    <p class="setup-note">
+      Leave "Answer" blank to auto-detect arithmetic patterns &nbsp;·&nbsp; Press Enter to add a row
+    </p>
+  </div>
+</div>
+
+<!-- ══════════ GAME SCREEN ══════════ -->
+<div id="game-screen">
+
+  <div id="game-topbar">
+    <button id="edit-btn">← Edit</button>
+    <div id="progress-dots"></div>
+    <span id="progress-label">1 / 1</span>
   </div>
 
-  <!-- BEEP Button -->
   <button id="beep-btn">BEEP!</button>
 
-  <!-- Number Display -->
   <div id="number-display">
-    <span id="placeholder-text">Enter a sequence above and press "Show Sequence"</span>
+    <span id="display-placeholder">Ready!</span>
   </div>
 
-  <!-- Action Buttons -->
   <div id="action-row">
-    <button class="btn-action" id="reveal-btn" disabled>Reveal Answer</button>
-    <button class="btn-action" id="reset-btn">New Sequence</button>
+    <button class="nav-btn" id="prev-btn" disabled>◀ Prev</button>
+    <button id="reveal-btn" disabled>Reveal Answer</button>
+    <button class="nav-btn" id="next-btn" disabled>Next ▶</button>
   </div>
 
-  <div id="status">Press <strong>Space</strong> or click BEEP! to play the sound</div>
+  <div id="status">Hit BEEP! or press Space</div>
+
+  <!-- Done overlay (inside game screen) -->
+  <div id="done-screen">
+    <h2>🎉 All Done!</h2>
+    <p>You went through all <span id="done-count"></span> sequences.</p>
+    <button id="restart-btn">Play Again ▶</button>
+  </div>
 
 </div>
 
 <script>
-  /* ── Wavy Background Animation ── */
-  (function () {
-    const canvas = document.getElementById('bg-canvas');
-    const ctx = canvas.getContext('2d');
-    let w, h, t = 0;
+/* ══════════════════════════════════════════
+   ANIMATED BACKGROUND
+══════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, t = 0;
+  const waves = [
+    { color:'rgba(80,60,220,0.55)',  amp:60, freq:0.008, speed:0.012, yBase:0.28, thick:4 },
+    { color:'rgba(200,40,180,0.50)', amp:50, freq:0.010, speed:0.016, yBase:0.44, thick:3.5 },
+    { color:'rgba(40,120,220,0.55)', amp:70, freq:0.007, speed:0.009, yBase:0.60, thick:4 },
+    { color:'rgba(220,60,130,0.40)', amp:45, freq:0.012, speed:0.020, yBase:0.75, thick:3 },
+    { color:'rgba(100,60,240,0.40)', amp:55, freq:0.009, speed:0.014, yBase:0.52, thick:3 },
+  ];
+  function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    waves.forEach((wave, i) => {
+      ctx.beginPath();
+      const yBase = h * wave.yBase;
+      for (let x = 0; x <= w; x++) {
+        const y = yBase + Math.sin(x * wave.freq + t * wave.speed + i * 1.3) * wave.amp;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = wave.color;
+      ctx.lineWidth = wave.thick;
+      ctx.stroke();
+    });
+    t++;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', resize);
+  resize(); draw();
+})();
 
-    const waves = [
-      { color: 'rgba(80,60,220,0.55)',  amp: 60, freq: 0.008, speed: 0.012, yBase: 0.30, thick: 4 },
-      { color: 'rgba(200,40,180,0.50)', amp: 50, freq: 0.010, speed: 0.016, yBase: 0.45, thick: 3.5 },
-      { color: 'rgba(40,120,220,0.55)', amp: 70, freq: 0.007, speed: 0.009, yBase: 0.60, thick: 4 },
-      { color: 'rgba(220,60,130,0.40)', amp: 45, freq: 0.012, speed: 0.020, yBase: 0.75, thick: 3 },
-      { color: 'rgba(100,60,240,0.40)', amp: 55, freq: 0.009, speed: 0.014, yBase: 0.55, thick: 3 },
+/* ══════════════════════════════════════════
+   BUZZER SOUND — basketball horn + buzzer
+══════════════════════════════════════════ */
+function playBuzzer() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const dur = 0.9;
+
+    // Dynamics compressor → max perceived loudness without clipping
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.setValueAtTime(-3, now);
+    comp.knee.setValueAtTime(2, now);
+    comp.ratio.setValueAtTime(20, now);
+    comp.attack.setValueAtTime(0.001, now);
+    comp.release.setValueAtTime(0.05, now);
+    comp.connect(ctx.destination);
+
+    // Waveshaper: tanh soft-clip → harsh buzzy distortion
+    const shaper = ctx.createWaveShaper();
+    const N = 512, curve = new Float32Array(N);
+    for (let i = 0; i < N; i++) {
+      const x = (i * 2) / N - 1;
+      curve[i] = Math.tanh(x * 5);
+    }
+    shaper.curve = curve;
+    shaper.oversample = '4x';
+
+    // Master gain with punch envelope
+    const master = ctx.createGain();
+    master.gain.setValueAtTime(0, now);
+    master.gain.linearRampToValueAtTime(3.0, now + 0.018); // sharp attack
+    master.gain.setValueAtTime(3.0, now + dur - 0.12);
+    master.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+    shaper.connect(master);
+    master.connect(comp);
+
+    // Oscillator bank — fundamental ~200Hz (horn-like) + harmonics + slight detuning
+    const base = 200;
+    const oscDefs = [
+      { mult: 1.00, vol: 1.0,  type: 'sawtooth' },
+      { mult: 2.00, vol: 0.65, type: 'sawtooth' },
+      { mult: 3.00, vol: 0.40, type: 'sawtooth' },
+      { mult: 4.00, vol: 0.28, type: 'square'   },
+      { mult: 1.01, vol: 0.35, type: 'sawtooth' }, // detuned unison → beating / roughness
+      { mult: 0.99, vol: 0.30, type: 'sawtooth' },
+      { mult: 6.00, vol: 0.12, type: 'square'   }, // high harmonic buzz
     ];
 
-    function resize() {
-      w = canvas.width  = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    }
+    oscDefs.forEach(({ mult, vol, type }) => {
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      // Pitch ramp up: air-horn "spin-up" feel
+      osc.frequency.setValueAtTime(base * mult * 0.55, now);
+      osc.frequency.exponentialRampToValueAtTime(base * mult, now + 0.04);
 
-    function draw() {
-      ctx.clearRect(0, 0, w, h);
-      waves.forEach((wave, i) => {
-        ctx.beginPath();
-        const yBase = h * wave.yBase;
-        for (let x = 0; x <= w; x++) {
-          const y = yBase + Math.sin(x * wave.freq + t * wave.speed + i * 1.3) * wave.amp;
-          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-        }
-        ctx.strokeStyle = wave.color;
-        ctx.lineWidth = wave.thick;
-        ctx.stroke();
-      });
-      t++;
-      requestAnimationFrame(draw);
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    draw();
-  })();
-
-  /* ── BEEP Sound (Web Audio API) ── */
-  function playBeepSound() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc  = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      gain.gain.setValueAtTime(0.35, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.55);
-    } catch (e) { /* audio blocked — silent fail */ }
-  }
-
-  /* ── Pattern Detection ── */
-  function detectNext(nums) {
-    if (nums.length < 2) return null;
-    // Arithmetic: constant difference
-    const diff = nums[1] - nums[0];
-    for (let i = 2; i < nums.length; i++) {
-      if (Math.abs((nums[i] - nums[i-1]) - diff) > 0.0001) return null;
-    }
-    const next = nums[nums.length - 1] + diff;
-    return Math.round(next * 10000) / 10000; // clean float
-  }
-
-  /* ── Game State ── */
-  let state = {
-    nums: [],
-    answer: null,
-    phase: 'setup', // 'setup' | 'ready' | 'revealed'
-  };
-
-  /* ── DOM refs ── */
-  const seqInput    = document.getElementById('seq-input');
-  const answerInput = document.getElementById('answer-input');
-  const setBtn      = document.getElementById('set-btn');
-  const beepBtn     = document.getElementById('beep-btn');
-  const display     = document.getElementById('number-display');
-  const revealBtn   = document.getElementById('reveal-btn');
-  const resetBtn    = document.getElementById('reset-btn');
-  const statusEl    = document.getElementById('status');
-  const setupPanel  = document.getElementById('setup-panel');
-  const toggleBtn   = document.getElementById('toggle-setup');
-
-  /* ── Render number display ── */
-  function renderDisplay() {
-    display.innerHTML = '';
-
-    if (state.nums.length === 0) {
-      display.innerHTML = '<span id="placeholder-text">Enter a sequence above and press "Show Sequence"</span>';
-      return;
-    }
-
-    state.nums.forEach((n, i) => {
-      const span = document.createElement('span');
-      span.className = 'num-item';
-      span.textContent = n;
-      display.appendChild(span);
-
-      // Add comma separator (not after last number)
-      const sep = document.createElement('span');
-      sep.className = 'num-separator';
-      sep.textContent = ',';
-      display.appendChild(sep);
+      const g = ctx.createGain();
+      g.gain.value = vol;
+      osc.connect(g);
+      g.connect(shaper);
+      osc.start(now);
+      osc.stop(now + dur + 0.05);
     });
 
-    // Blank slot for the missing number
-    const blank = document.createElement('span');
-    blank.className = 'num-blank';
-    blank.id = 'answer-slot';
+    // Noise burst at the very start (air blast / transient)
+    const bufLen = Math.ceil(ctx.sampleRate * 0.08);
+    const noiseBuf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const nd = noiseBuf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) nd[i] = Math.random() * 2 - 1;
 
-    if (state.phase === 'revealed') {
-      blank.textContent = state.answer ?? '?';
+    const noiseNode = ctx.createBufferSource();
+    noiseNode.buffer = noiseBuf;
+
+    const noiseFilt = ctx.createBiquadFilter();
+    noiseFilt.type = 'bandpass';
+    noiseFilt.frequency.value = 900;
+    noiseFilt.Q.value = 1.5;
+
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.6, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+
+    noiseNode.connect(noiseFilt);
+    noiseFilt.connect(noiseGain);
+    noiseGain.connect(master);
+    noiseNode.start(now);
+
+  } catch (e) { /* silent fail */ }
+}
+
+/* ══════════════════════════════════════════
+   PATTERN DETECTION
+══════════════════════════════════════════ */
+function detectNext(nums) {
+  if (nums.length < 2) return null;
+  const diff = nums[1] - nums[0];
+  for (let i = 2; i < nums.length; i++) {
+    if (Math.abs((nums[i] - nums[i - 1]) - diff) > 0.0001) return null;
+  }
+  return Math.round((nums[nums.length - 1] + diff) * 100000) / 100000;
+}
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let sequences = []; // [{nums:[], answer:number|null}]
+let gameIdx   = 0;
+let gamePhase = 'ready'; // 'ready' | 'revealed'
+
+/* ══════════════════════════════════════════
+   SETUP SCREEN
+══════════════════════════════════════════ */
+const seqListEl  = document.getElementById('seq-list');
+const addBtn     = document.getElementById('add-btn');
+const startBtn   = document.getElementById('start-btn');
+
+let rowCount = 0;
+
+function addRow(seqVal = '', ansVal = '') {
+  rowCount++;
+  const idx = rowCount;
+
+  const row = document.createElement('div');
+  row.className = 'seq-row';
+  row.dataset.id = idx;
+
+  row.innerHTML = `
+    <span class="seq-num">${seqListEl.children.length + 1}.</span>
+    <input class="seq-input" type="text" placeholder="e.g.  5, 10, 15  or  100, 90, 80" value="${seqVal}" />
+    <span class="arrow-label">→</span>
+    <input class="ans-input" type="number" placeholder="auto" value="${ansVal}" />
+    <span class="ans-hint"></span>
+    <button class="del-btn" title="Remove">✕</button>
+  `;
+
+  const seqInput = row.querySelector('.seq-input');
+  const ansInput = row.querySelector('.ans-input');
+  const hint     = row.querySelector('.ans-hint');
+
+  function updateHint() {
+    const parts = seqInput.value.trim().split(/[\s,]+/).filter(Boolean).map(Number);
+    if (parts.length >= 2 && !parts.some(isNaN)) {
+      const det = detectNext(parts);
+      if (ansInput.value.trim() === '') {
+        hint.textContent = det !== null ? `✓ ${det}` : '?';
+        hint.style.color = det !== null ? 'rgba(120,255,160,0.8)' : 'rgba(255,180,80,0.8)';
+      } else {
+        hint.textContent = '';
+      }
     } else {
-      blank.textContent = '\u00A0\u00A0\u00A0'; // non-breaking spaces to give width
+      hint.textContent = '';
     }
-
-    display.appendChild(blank);
+    updateStartBtn();
   }
 
-  /* ── Set sequence ── */
-  setBtn.addEventListener('click', () => {
-    const raw = seqInput.value.trim();
-    if (!raw) { seqInput.focus(); return; }
+  seqInput.addEventListener('input', updateHint);
+  ansInput.addEventListener('input', updateHint);
 
-    // Parse: split on commas, spaces, or comma+space
-    const parts = raw.split(/[\s,]+/).filter(Boolean);
-    const nums = parts.map(Number);
-
-    if (nums.some(isNaN)) {
-      statusEl.textContent = 'Oops — only numbers please! Check your sequence.';
-      seqInput.focus();
-      return;
-    }
-
-    state.nums = nums;
-
-    // Answer: manual override > auto-detect
-    const manualAns = answerInput.value.trim();
-    if (manualAns !== '') {
-      state.answer = Number(manualAns);
-    } else {
-      state.answer = detectNext(nums);
-    }
-
-    state.phase = 'ready';
-    revealBtn.disabled = false;
-    renderDisplay();
-
-    const detected = state.answer !== null
-      ? `Pattern detected — next number: ${state.answer}`
-      : 'No arithmetic pattern found. Enter the answer manually if needed.';
-    statusEl.textContent = detected;
-
-    // Hide setup panel after setting
-    setupPanel.style.display = 'none';
-    toggleBtn.textContent = 'Edit Sequence';
+  seqInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addRow(); }
   });
 
-  /* ── BEEP button ── */
-  beepBtn.addEventListener('click', () => {
-    playBeepSound();
-    beepBtn.classList.remove('shake');
-    void beepBtn.offsetWidth; // reflow to restart animation
-    beepBtn.classList.add('shake');
-    beepBtn.addEventListener('animationend', () => beepBtn.classList.remove('shake'), { once: true });
-    statusEl.textContent = 'What comes next? 🤔';
+  row.querySelector('.del-btn').addEventListener('click', () => {
+    row.remove();
+    renumberRows();
+    updateStartBtn();
   });
 
-  /* ── Reveal answer ── */
-  revealBtn.addEventListener('click', () => {
-    if (state.phase !== 'ready' && state.phase !== 'revealed') return;
-    state.phase = 'revealed';
-    renderDisplay();
-    revealBtn.disabled = true;
+  seqListEl.appendChild(row);
+  renumberRows();
+  seqInput.focus();
+  if (seqVal) updateHint();
+  updateStartBtn();
+  return row;
+}
 
-    // Pop-in animation on the answer slot
-    const slot = document.getElementById('answer-slot');
-    if (slot) {
-      slot.classList.add('pop-in');
-    }
+function renumberRows() {
+  Array.from(seqListEl.children).forEach((r, i) => {
+    r.querySelector('.seq-num').textContent = (i + 1) + '.';
+  });
+}
 
-    if (state.answer !== null) {
-      statusEl.textContent = `The answer is ${state.answer}!`;
-    } else {
-      statusEl.textContent = 'Answer revealed!';
-    }
+function updateStartBtn() {
+  const hasAny = seqListEl.children.length > 0 &&
+    Array.from(seqListEl.querySelectorAll('.seq-input')).some(inp => inp.value.trim() !== '');
+  startBtn.disabled = !hasAny;
+}
+
+function parseSetup() {
+  const result = [];
+  Array.from(seqListEl.querySelectorAll('.seq-row')).forEach(row => {
+    const seqRaw = row.querySelector('.seq-input').value.trim();
+    const ansRaw = row.querySelector('.ans-input').value.trim();
+    if (!seqRaw) return;
+    const nums = seqRaw.split(/[\s,]+/).filter(Boolean).map(Number);
+    if (nums.some(isNaN)) return;
+    const answer = ansRaw !== '' ? Number(ansRaw) : detectNext(nums);
+    result.push({ nums, answer });
+  });
+  return result;
+}
+
+addBtn.addEventListener('click', () => addRow());
+
+startBtn.addEventListener('click', () => {
+  const parsed = parseSetup();
+  if (parsed.length === 0) return;
+  sequences = parsed;
+  gameIdx   = 0;
+  gamePhase = 'ready';
+  showGameScreen();
+});
+
+// Start with 4 empty rows
+for (let i = 0; i < 4; i++) addRow();
+
+/* ══════════════════════════════════════════
+   SCREEN SWITCHING
+══════════════════════════════════════════ */
+const setupScreen = document.getElementById('setup-screen');
+const gameScreen  = document.getElementById('game-screen');
+const doneScreen  = document.getElementById('done-screen');
+
+function showSetupScreen() {
+  setupScreen.style.display = 'flex';
+  gameScreen.style.display  = 'none';
+}
+
+function showGameScreen() {
+  setupScreen.style.display = 'none';
+  gameScreen.style.display  = 'flex';
+  doneScreen.style.display  = 'none';
+  renderGame();
+}
+
+/* ══════════════════════════════════════════
+   GAME SCREEN
+══════════════════════════════════════════ */
+const beepBtn      = document.getElementById('beep-btn');
+const numDisplay   = document.getElementById('number-display');
+const revealBtn    = document.getElementById('reveal-btn');
+const prevBtn      = document.getElementById('prev-btn');
+const nextBtn      = document.getElementById('next-btn');
+const statusEl     = document.getElementById('status');
+const progressLbl  = document.getElementById('progress-label');
+const progressDots = document.getElementById('progress-dots');
+const editBtn      = document.getElementById('edit-btn');
+const doneCount    = document.getElementById('done-count');
+const restartBtn   = document.getElementById('restart-btn');
+const flashEl      = document.getElementById('flash');
+
+function renderProgress() {
+  progressLbl.textContent = `${gameIdx + 1} / ${sequences.length}`;
+
+  // dots (max 12 shown)
+  progressDots.innerHTML = '';
+  const max = Math.min(sequences.length, 12);
+  for (let i = 0; i < max; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < gameIdx ? ' done' : i === gameIdx ? ' curr' : '');
+    progressDots.appendChild(d);
+  }
+}
+
+function renderNumberDisplay(revealed) {
+  numDisplay.innerHTML = '';
+  const seq = sequences[gameIdx];
+  if (!seq) return;
+
+  seq.nums.forEach(n => {
+    const span = document.createElement('span');
+    span.className = 'num-item';
+    span.textContent = n;
+    numDisplay.appendChild(span);
+
+    const sep = document.createElement('span');
+    sep.className = 'num-sep';
+    sep.textContent = ',';
+    numDisplay.appendChild(sep);
   });
 
-  /* ── Reset / New sequence ── */
-  resetBtn.addEventListener('click', () => {
-    state = { nums: [], answer: null, phase: 'setup' };
-    seqInput.value = '';
-    answerInput.value = '';
-    revealBtn.disabled = true;
-    renderDisplay();
-    statusEl.textContent = 'Ready for a new sequence!';
-    setupPanel.style.display = '';
-    toggleBtn.textContent = 'Teacher Controls';
-    seqInput.focus();
-  });
+  const blank = document.createElement('span');
+  blank.className = 'num-blank';
+  blank.id = 'answer-slot';
+  if (revealed) {
+    const ans = seq.answer;
+    blank.textContent = ans !== null ? ans : '?';
+  } else {
+    blank.textContent = '\u00A0\u00A0\u00A0\u00A0';
+  }
+  numDisplay.appendChild(blank);
+}
 
-  /* ── Toggle setup panel ── */
-  toggleBtn.addEventListener('click', () => {
-    const hidden = setupPanel.style.display === 'none';
-    setupPanel.style.display = hidden ? '' : 'none';
-    toggleBtn.textContent = hidden ? 'Hide Controls' : 'Edit Sequence';
-  });
+function renderGame() {
+  if (gameIdx >= sequences.length) {
+    showDone();
+    return;
+  }
 
-  /* ── Keyboard shortcuts ── */
-  document.addEventListener('keydown', (e) => {
-    if (e.target.tagName === 'INPUT') return; // don't steal from inputs
-    if (e.code === 'Space') {
-      e.preventDefault();
-      beepBtn.click();
-    }
-    if (e.code === 'Enter' || e.code === 'KeyR') {
-      e.preventDefault();
-      if (!revealBtn.disabled) revealBtn.click();
-    }
-  });
+  gamePhase = 'ready';
+  renderProgress();
+  renderNumberDisplay(false);
 
-  /* ── Also allow Enter in sequence input to trigger Set ── */
-  seqInput.addEventListener('keydown', (e) => {
-    if (e.code === 'Enter') setBtn.click();
-  });
-  answerInput.addEventListener('keydown', (e) => {
-    if (e.code === 'Enter') setBtn.click();
-  });
+  revealBtn.disabled = false;
+  nextBtn.disabled   = false;
+  prevBtn.disabled   = gameIdx === 0;
+  nextBtn.classList.remove('highlight');
+  statusEl.textContent = 'Hit BEEP! — then students say the next number';
+}
 
-  /* ── Initial render ── */
-  renderDisplay();
+function showDone() {
+  doneScreen.style.display  = 'flex';
+  beepBtn.style.display     = 'none';
+  numDisplay.style.display  = 'none';
+  document.getElementById('action-row').style.display = 'none';
+  statusEl.textContent = '';
+  doneCount.textContent = sequences.length;
+}
+
+/* BEEP */
+beepBtn.addEventListener('click', () => {
+  playBuzzer();
+
+  // Button shake
+  beepBtn.classList.remove('blast');
+  void beepBtn.offsetWidth;
+  beepBtn.classList.add('blast');
+  beepBtn.addEventListener('animationend', () => beepBtn.classList.remove('blast'), { once: true });
+
+  // Screen flash
+  flashEl.classList.add('on');
+  setTimeout(() => flashEl.classList.remove('on'), 110);
+
+  statusEl.textContent = 'What comes next?';
+});
+
+/* Reveal */
+revealBtn.addEventListener('click', () => {
+  if (gamePhase === 'revealed') return;
+  gamePhase = 'revealed';
+  renderNumberDisplay(true);
+  revealBtn.disabled = true;
+
+  const slot = document.getElementById('answer-slot');
+  if (slot) slot.classList.add('pop');
+
+  const ans = sequences[gameIdx]?.answer;
+  statusEl.textContent = ans !== null ? `The answer is ${ans}!` : 'Answer revealed!';
+
+  // Highlight Next button
+  if (gameIdx < sequences.length - 1) {
+    nextBtn.classList.add('highlight');
+  }
+});
+
+/* Next */
+nextBtn.addEventListener('click', () => {
+  if (gameIdx >= sequences.length - 1) { showDone(); return; }
+  gameIdx++;
+  renderGame();
+});
+
+/* Prev */
+prevBtn.addEventListener('click', () => {
+  if (gameIdx === 0) return;
+  gameIdx--;
+  renderGame();
+});
+
+/* Edit */
+editBtn.addEventListener('click', () => {
+  beepBtn.style.display     = '';
+  numDisplay.style.display  = '';
+  document.getElementById('action-row').style.display = '';
+  doneScreen.style.display  = 'none';
+  showSetupScreen();
+});
+
+/* Restart */
+restartBtn.addEventListener('click', () => {
+  beepBtn.style.display     = '';
+  numDisplay.style.display  = '';
+  document.getElementById('action-row').style.display = '';
+  doneScreen.style.display  = 'none';
+  gameIdx   = 0;
+  gamePhase = 'ready';
+  showGameScreen();
+});
+
+/* Keyboard */
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (gameScreen.style.display === 'none') return;
+  if (e.code === 'Space') { e.preventDefault(); beepBtn.click(); }
+  if (e.code === 'Enter' || e.code === 'KeyR') { e.preventDefault(); if (!revealBtn.disabled) revealBtn.click(); }
+  if (e.code === 'ArrowRight') { e.preventDefault(); if (!nextBtn.disabled) nextBtn.click(); }
+  if (e.code === 'ArrowLeft')  { e.preventDefault(); if (!prevBtn.disabled) prevBtn.click(); }
+});
 </script>
-
 </body>
 </html>
