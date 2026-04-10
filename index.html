@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BEEP! Math Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #1a0a3e;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ── Animated wavy background ── */
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Main layout ── */
+    #app {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+      width: 100%;
+      max-width: 900px;
+      padding: 24px 20px 20px;
+    }
+
+    /* ── Teacher setup panel ── */
+    #setup-panel {
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: 18px;
+      padding: 18px 24px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      backdrop-filter: blur(8px);
+    }
+
+    #setup-panel h2 {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      opacity: 0.7;
+    }
+
+    .setup-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .setup-row label {
+      color: #fff;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      min-width: 90px;
+    }
+
+    input[type="text"], input[type="number"] {
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.25);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 8px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"] { flex: 1; min-width: 180px; }
+    input[type="number"] { width: 90px; }
+
+    input:focus { border-color: rgba(255,255,255,0.6); }
+    input::placeholder { opacity: 0.45; }
+
+    .hint {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+      margin-top: -6px;
+    }
+
+    .btn-set {
+      background: linear-gradient(135deg, #5b3fc8, #8a3dd6);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      padding: 10px 24px;
+      transition: transform 0.12s, filter 0.12s;
+    }
+
+    .btn-set:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-set:active { transform: translateY(1px); }
+
+    /* ── Toggle panel button ── */
+    #toggle-setup {
+      position: fixed;
+      top: 14px;
+      right: 18px;
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      color: rgba(255,255,255,0.8);
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 6px 14px;
+      z-index: 10;
+      letter-spacing: 0.04em;
+      transition: background 0.2s;
+    }
+    #toggle-setup:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── BEEP button ── */
+    #beep-btn {
+      background: linear-gradient(160deg, #e02020 0%, #b00000 100%);
+      border: none;
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(200, 0, 0, 0.5), 0 2px 8px rgba(0,0,0,0.4);
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 3.8rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      padding: 28px 80px;
+      transition: transform 0.08s, box-shadow 0.08s, filter 0.08s;
+      user-select: none;
+      min-width: 340px;
+      text-align: center;
+    }
+
+    #beep-btn:hover {
+      filter: brightness(1.12);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(200, 0, 0, 0.6), 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    #beep-btn:active, #beep-btn.pressed {
+      transform: scale(0.96) translateY(2px);
+      box-shadow: 0 4px 16px rgba(200, 0, 0, 0.4);
+      filter: brightness(0.95);
+    }
+
+    #beep-btn.shake {
+      animation: shake 0.35s ease;
+    }
+
+    @keyframes shake {
+      0%   { transform: scale(0.97) translateY(2px); }
+      20%  { transform: scale(1.04) rotate(-1.5deg); }
+      40%  { transform: scale(1.04) rotate(1.5deg); }
+      60%  { transform: scale(1.02) rotate(-0.8deg); }
+      80%  { transform: scale(1.02) rotate(0.8deg); }
+      100% { transform: scale(1) rotate(0); }
+    }
+
+    /* ── Number display ── */
+    #number-display {
+      background: #fff;
+      border-radius: 18px;
+      width: 100%;
+      min-height: 140px;
+      padding: 24px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.3);
+    }
+
+    .num-item {
+      font-family: 'Caveat', cursive;
+      font-size: 5rem;
+      color: #d42020;
+      line-height: 1;
+      transition: opacity 0.2s;
+    }
+
+    .num-separator {
+      font-family: 'Caveat', cursive;
+      font-size: 4rem;
+      color: #d42020;
+      opacity: 0.6;
+      line-height: 1;
+      align-self: center;
+    }
+
+    .num-blank {
+      font-family: 'Caveat', cursive;
+      font-size: 5rem;
+      color: #d42020;
+      line-height: 1;
+      min-width: 80px;
+      border-bottom: 5px solid #d42020;
+      text-align: center;
+      position: relative;
+    }
+
+    .num-blank.hidden-answer { color: transparent; }
+
+    .num-blank .answer-text {
+      transition: opacity 0.4s;
+    }
+
+    #placeholder-text {
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #aaa;
+      text-align: center;
+    }
+
+    /* ── Action buttons row ── */
+    #action-row {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn-action {
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      padding: 12px 28px;
+      transition: transform 0.1s, filter 0.1s, opacity 0.2s;
+    }
+
+    .btn-action:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-action:not(:disabled):hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn-action:not(:disabled):active { transform: translateY(1px); }
+
+    #reveal-btn {
+      background: linear-gradient(135deg, #27ae60, #1a7d46);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0,150,80,0.4);
+    }
+
+    #reset-btn {
+      background: rgba(255,255,255,0.15);
+      border: 2px solid rgba(255,255,255,0.25);
+      color: #fff;
+    }
+
+    /* ── Status bar ── */
+    #status {
+      color: rgba(255,255,255,0.55);
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-align: center;
+    }
+
+    /* ── Reveal flash ── */
+    @keyframes popIn {
+      0%   { transform: scale(0.5); opacity: 0; }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .pop-in { animation: popIn 0.35s ease forwards; }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      #beep-btn { font-size: 2.8rem; padding: 22px 50px; min-width: 240px; }
+      .num-item, .num-blank { font-size: 3.8rem; }
+      .num-separator { font-size: 3rem; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<button id="toggle-setup">Teacher Controls</button>
+
+<div id="app">
+
+  <!-- Teacher Setup Panel -->
+  <div id="setup-panel">
+    <h2>Set Up Sequence</h2>
+
+    <div class="setup-row">
+      <label for="seq-input">Sequence:</label>
+      <input type="text" id="seq-input" placeholder="e.g.  2, 4, 6  or  30, 25, 20" />
+    </div>
+    <p class="hint">Enter the numbers students will see, separated by commas or spaces.</p>
+
+    <div class="setup-row">
+      <label for="answer-input">Answer (BEEP):</label>
+      <input type="number" id="answer-input" placeholder="auto" />
+      <span style="color:rgba(255,255,255,0.45);font-size:0.85rem;">(leave blank to auto-detect)</span>
+    </div>
+
+    <div class="setup-row" style="justify-content:flex-end;">
+      <button class="btn-set" id="set-btn">Show Sequence ▶</button>
+    </div>
+  </div>
+
+  <!-- BEEP Button -->
+  <button id="beep-btn">BEEP!</button>
+
+  <!-- Number Display -->
+  <div id="number-display">
+    <span id="placeholder-text">Enter a sequence above and press "Show Sequence"</span>
+  </div>
+
+  <!-- Action Buttons -->
+  <div id="action-row">
+    <button class="btn-action" id="reveal-btn" disabled>Reveal Answer</button>
+    <button class="btn-action" id="reset-btn">New Sequence</button>
+  </div>
+
+  <div id="status">Press <strong>Space</strong> or click BEEP! to play the sound</div>
+
+</div>
+
+<script>
+  /* ── Wavy Background Animation ── */
+  (function () {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, t = 0;
+
+    const waves = [
+      { color: 'rgba(80,60,220,0.55)',  amp: 60, freq: 0.008, speed: 0.012, yBase: 0.30, thick: 4 },
+      { color: 'rgba(200,40,180,0.50)', amp: 50, freq: 0.010, speed: 0.016, yBase: 0.45, thick: 3.5 },
+      { color: 'rgba(40,120,220,0.55)', amp: 70, freq: 0.007, speed: 0.009, yBase: 0.60, thick: 4 },
+      { color: 'rgba(220,60,130,0.40)', amp: 45, freq: 0.012, speed: 0.020, yBase: 0.75, thick: 3 },
+      { color: 'rgba(100,60,240,0.40)', amp: 55, freq: 0.009, speed: 0.014, yBase: 0.55, thick: 3 },
+    ];
+
+    function resize() {
+      w = canvas.width  = window.innerWidth;
+      h = canvas.height = window.innerHeight;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      waves.forEach((wave, i) => {
+        ctx.beginPath();
+        const yBase = h * wave.yBase;
+        for (let x = 0; x <= w; x++) {
+          const y = yBase + Math.sin(x * wave.freq + t * wave.speed + i * 1.3) * wave.amp;
+          x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = wave.color;
+        ctx.lineWidth = wave.thick;
+        ctx.stroke();
+      });
+      t++;
+      requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    draw();
+  })();
+
+  /* ── BEEP Sound (Web Audio API) ── */
+  function playBeepSound() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      gain.gain.setValueAtTime(0.35, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.55);
+    } catch (e) { /* audio blocked — silent fail */ }
+  }
+
+  /* ── Pattern Detection ── */
+  function detectNext(nums) {
+    if (nums.length < 2) return null;
+    // Arithmetic: constant difference
+    const diff = nums[1] - nums[0];
+    for (let i = 2; i < nums.length; i++) {
+      if (Math.abs((nums[i] - nums[i-1]) - diff) > 0.0001) return null;
+    }
+    const next = nums[nums.length - 1] + diff;
+    return Math.round(next * 10000) / 10000; // clean float
+  }
+
+  /* ── Game State ── */
+  let state = {
+    nums: [],
+    answer: null,
+    phase: 'setup', // 'setup' | 'ready' | 'revealed'
+  };
+
+  /* ── DOM refs ── */
+  const seqInput    = document.getElementById('seq-input');
+  const answerInput = document.getElementById('answer-input');
+  const setBtn      = document.getElementById('set-btn');
+  const beepBtn     = document.getElementById('beep-btn');
+  const display     = document.getElementById('number-display');
+  const revealBtn   = document.getElementById('reveal-btn');
+  const resetBtn    = document.getElementById('reset-btn');
+  const statusEl    = document.getElementById('status');
+  const setupPanel  = document.getElementById('setup-panel');
+  const toggleBtn   = document.getElementById('toggle-setup');
+
+  /* ── Render number display ── */
+  function renderDisplay() {
+    display.innerHTML = '';
+
+    if (state.nums.length === 0) {
+      display.innerHTML = '<span id="placeholder-text">Enter a sequence above and press "Show Sequence"</span>';
+      return;
+    }
+
+    state.nums.forEach((n, i) => {
+      const span = document.createElement('span');
+      span.className = 'num-item';
+      span.textContent = n;
+      display.appendChild(span);
+
+      // Add comma separator (not after last number)
+      const sep = document.createElement('span');
+      sep.className = 'num-separator';
+      sep.textContent = ',';
+      display.appendChild(sep);
+    });
+
+    // Blank slot for the missing number
+    const blank = document.createElement('span');
+    blank.className = 'num-blank';
+    blank.id = 'answer-slot';
+
+    if (state.phase === 'revealed') {
+      blank.textContent = state.answer ?? '?';
+    } else {
+      blank.textContent = '\u00A0\u00A0\u00A0'; // non-breaking spaces to give width
+    }
+
+    display.appendChild(blank);
+  }
+
+  /* ── Set sequence ── */
+  setBtn.addEventListener('click', () => {
+    const raw = seqInput.value.trim();
+    if (!raw) { seqInput.focus(); return; }
+
+    // Parse: split on commas, spaces, or comma+space
+    const parts = raw.split(/[\s,]+/).filter(Boolean);
+    const nums = parts.map(Number);
+
+    if (nums.some(isNaN)) {
+      statusEl.textContent = 'Oops — only numbers please! Check your sequence.';
+      seqInput.focus();
+      return;
+    }
+
+    state.nums = nums;
+
+    // Answer: manual override > auto-detect
+    const manualAns = answerInput.value.trim();
+    if (manualAns !== '') {
+      state.answer = Number(manualAns);
+    } else {
+      state.answer = detectNext(nums);
+    }
+
+    state.phase = 'ready';
+    revealBtn.disabled = false;
+    renderDisplay();
+
+    const detected = state.answer !== null
+      ? `Pattern detected — next number: ${state.answer}`
+      : 'No arithmetic pattern found. Enter the answer manually if needed.';
+    statusEl.textContent = detected;
+
+    // Hide setup panel after setting
+    setupPanel.style.display = 'none';
+    toggleBtn.textContent = 'Edit Sequence';
+  });
+
+  /* ── BEEP button ── */
+  beepBtn.addEventListener('click', () => {
+    playBeepSound();
+    beepBtn.classList.remove('shake');
+    void beepBtn.offsetWidth; // reflow to restart animation
+    beepBtn.classList.add('shake');
+    beepBtn.addEventListener('animationend', () => beepBtn.classList.remove('shake'), { once: true });
+    statusEl.textContent = 'What comes next? 🤔';
+  });
+
+  /* ── Reveal answer ── */
+  revealBtn.addEventListener('click', () => {
+    if (state.phase !== 'ready' && state.phase !== 'revealed') return;
+    state.phase = 'revealed';
+    renderDisplay();
+    revealBtn.disabled = true;
+
+    // Pop-in animation on the answer slot
+    const slot = document.getElementById('answer-slot');
+    if (slot) {
+      slot.classList.add('pop-in');
+    }
+
+    if (state.answer !== null) {
+      statusEl.textContent = `The answer is ${state.answer}!`;
+    } else {
+      statusEl.textContent = 'Answer revealed!';
+    }
+  });
+
+  /* ── Reset / New sequence ── */
+  resetBtn.addEventListener('click', () => {
+    state = { nums: [], answer: null, phase: 'setup' };
+    seqInput.value = '';
+    answerInput.value = '';
+    revealBtn.disabled = true;
+    renderDisplay();
+    statusEl.textContent = 'Ready for a new sequence!';
+    setupPanel.style.display = '';
+    toggleBtn.textContent = 'Teacher Controls';
+    seqInput.focus();
+  });
+
+  /* ── Toggle setup panel ── */
+  toggleBtn.addEventListener('click', () => {
+    const hidden = setupPanel.style.display === 'none';
+    setupPanel.style.display = hidden ? '' : 'none';
+    toggleBtn.textContent = hidden ? 'Hide Controls' : 'Edit Sequence';
+  });
+
+  /* ── Keyboard shortcuts ── */
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return; // don't steal from inputs
+    if (e.code === 'Space') {
+      e.preventDefault();
+      beepBtn.click();
+    }
+    if (e.code === 'Enter' || e.code === 'KeyR') {
+      e.preventDefault();
+      if (!revealBtn.disabled) revealBtn.click();
+    }
+  });
+
+  /* ── Also allow Enter in sequence input to trigger Set ── */
+  seqInput.addEventListener('keydown', (e) => {
+    if (e.code === 'Enter') setBtn.click();
+  });
+  answerInput.addEventListener('keydown', (e) => {
+    if (e.code === 'Enter') setBtn.click();
+  });
+
+  /* ── Initial render ── */
+  renderDisplay();
+</script>
+
+</body>
+</html>
